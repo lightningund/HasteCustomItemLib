@@ -135,28 +135,28 @@ namespace CustomItemLib {
 			if (val is not null) param = val;
 		}
 
-		public class Item : ItemInstance {
+		public class Item {
 			public bool autoUnlocked = false;
-			public new string itemName;
-			public new bool? minorItem;
-			public new Rarity? rarity;
-			public new List<ItemTag>? itemTags;
-			public new LocalizedString? title;
-			public new bool? usesTriggerDescription;
-			public new LocalizedString? triggerDescription;
-			public new bool? usesEffectDescription;
-			public new LocalizedString? description;
-			public new LocalizedString? flavorText;
-			public new float? iconScaleModifier;
-			public new bool? statsAfterTrigger;
-			public new float? cooldown;
-			public new ItemTriggerType? triggerType;
-			public new List<ItemTrigger>? triggerConditions;
-			public new List<ItemEffect>? effects;
-			public new PlayerStats? stats;
-			public new UnityEvent? effectEvent;
-			public new UnityEvent? keyDownEvent;
-			public new UnityEvent? keyUpEvent;
+			public string itemName;
+			public bool? minorItem;
+			public Rarity? rarity;
+			public List<ItemTag>? itemTags;
+			public LocalizedString? title;
+			public bool? usesTriggerDescription;
+			public LocalizedString? triggerDescription;
+			public bool? usesEffectDescription;
+			public LocalizedString? description;
+			public LocalizedString? flavorText;
+			public float? iconScaleModifier;
+			public bool? statsAfterTrigger;
+			public float? cooldown;
+			public ItemTriggerType? triggerType;
+			public List<ItemTrigger>? triggerConditions;
+			public List<ItemEffect>? effects;
+			public PlayerStats? stats;
+			public UnityEvent? effectEvent;
+			public UnityEvent? keyDownEvent;
+			public UnityEvent? keyUpEvent;
 		};
 
 		private static readonly Item defaults = new() {
@@ -183,14 +183,55 @@ namespace CustomItemLib {
 			keyUpEvent = new()
 		};
 
+		/**
+		 * Tries to get the named member as a field first and then as a property
+		 */
+		private static object? TryGet<T>(string name, T obj) {
+			try {
+				return obj.GetType().GetField(name).GetValue(obj);
+			} catch (Exception) { }
+
+			try {
+				return obj.GetType().GetProperty(name).GetValue(obj);
+			} catch (Exception) { }
+
+			return null;
+		}
+
+		/**
+		 * Tries to set the named member as a field first and then as a property
+		 */
+		private static void TrySet<T, U>(string name, ref T obj, U val) {
+			try {
+				obj.GetType().GetField(name).SetValue(obj, val);
+				return;
+			} catch (Exception) { }
+
+			try {
+				obj.GetType().GetProperty(name).SetValue(obj, val);
+				return;
+			} catch (Exception) { }
+		}
+
 		public static void AddItemToDatabase(Item item) {
 			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
 
 			if (itemInstance is not null) {
 				Debug.Log($"[CustomItemLib] Replacing item {item.itemName}");
+				var itmInstType = itemInstance.GetType();
 
-				foreach (var prop in itemInstance.GetType().GetProperties()) {
-					AssignIfNotNull(ref prop.GetValue(itemInstance), prop.GetValue(item));
+				foreach (var field in item.GetType().GetFields()) {
+					var newVal = field.GetValue(item);
+					if (newVal is null) continue;
+
+					var oldVal = TryGet(field.Name, itemInstance);
+					if (oldVal is null) continue;
+
+					Debug.Log(field.Name);
+					Debug.Log(oldVal);
+					Debug.Log(newVal);
+
+					TrySet(field.Name, ref itemInstance, newVal);
 				}
 			}
 		}
