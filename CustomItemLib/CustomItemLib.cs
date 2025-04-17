@@ -75,6 +75,47 @@ namespace CustomItemLib {
 			keyUpEvent = new()
 		};
 
+		/**
+		 * Tries to get the named member as a field first and then as a property
+		 */
+		private static object? TryGet<T>(string name, T obj) {
+			try {
+				return obj.GetType().GetField(name).GetValue(obj);
+			} catch (Exception) { }
+
+			try {
+				return obj.GetType().GetProperty(name).GetValue(obj);
+			} catch (Exception) { }
+
+			return null;
+		}
+
+		/**
+		 * Tries to set the named member as a field first and then as a property
+		 */
+		private static void TrySet<T, U>(string name, ref T obj, U val) {
+			try {
+				obj.GetType().GetField(name).SetValue(obj, val);
+				return;
+			} catch (Exception) { }
+
+			try {
+				obj.GetType().GetProperty(name).SetValue(obj, val);
+				return;
+			} catch (Exception) { }
+		}
+
+		private static void SetAll(ref ItemInstance instance, Item item) {
+			foreach (var field in item.GetType().GetFields()) {
+				var newVal = field.GetValue(item);
+				if (newVal is null) continue;
+
+				TrySet(field.Name, ref instance, newVal);
+
+				Debug.Log($"[CustomItemLib] Set item stat {field.Name}");
+			}
+		}
+
 		static ItemFactory() {
 			On.ItemDatabase.Awake += (orig, self) => {
 				orig(self);
@@ -172,51 +213,11 @@ namespace CustomItemLib {
 				ItemInstance itemInstanceComponent = itemObject.AddComponent<ItemInstance>();
 				ItemDatabase.instance.items.Add(itemInstanceComponent);
 				UnityEngine.Object.DontDestroyOnLoad(itemObject);
+				SetAll(ref itemInstanceComponent, DefaultItem);
 				return itemInstanceComponent;
 			} catch (Exception) {
 				UnityEngine.Object.Destroy(itemObject);
 				throw;
-			}
-		}
-
-		/**
-		 * Tries to get the named member as a field first and then as a property
-		 */
-		private static object? TryGet<T>(string name, T obj) {
-			try {
-				return obj.GetType().GetField(name).GetValue(obj);
-			} catch (Exception) { }
-
-			try {
-				return obj.GetType().GetProperty(name).GetValue(obj);
-			} catch (Exception) { }
-
-			return null;
-		}
-
-		/**
-		 * Tries to set the named member as a field first and then as a property
-		 */
-		private static void TrySet<T, U>(string name, ref T obj, U val) {
-			try {
-				obj.GetType().GetField(name).SetValue(obj, val);
-				return;
-			} catch (Exception) { }
-
-			try {
-				obj.GetType().GetProperty(name).SetValue(obj, val);
-				return;
-			} catch (Exception) { }
-		}
-
-		private static void SetAll(ref ItemInstance instance, Item item) {
-			foreach (var field in item.GetType().GetFields()) {
-				var newVal = field.GetValue(item);
-				if (newVal is null) continue;
-
-				TrySet(field.Name, ref instance, newVal);
-
-				Debug.Log($"[CustomItemLib] Set item stat {field.Name}");
 			}
 		}
 
@@ -225,13 +226,13 @@ namespace CustomItemLib {
 
 			if (itemInstance is not null) {
 				Debug.Log($"[CustomItemLib] Replacing item {item.itemName}");
-
-				SetAll(ref itemInstance, item);
 			} else {
 				Debug.Log($"[CustomItemLib] Creating new item {item.itemName}");
 
 				itemInstance = CreateNewItemInstance(item.itemName);
 			}
+
+			SetAll(ref itemInstance, item);
 		}
 
 		public static void AddItemToDatabase(
