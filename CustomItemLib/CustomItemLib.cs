@@ -27,6 +27,54 @@ using Landfall.Haste;
 
 namespace CustomItemLib {
 	public class ItemFactory {
+		public class Item {
+			public bool autoUnlocked = false;
+			public string itemName;
+			public bool? minorItem;
+			public Rarity? rarity;
+			public List<ItemTag>? itemTags;
+			public LocalizedString? title;
+			public bool? usesTriggerDescription;
+			public LocalizedString? triggerDescription;
+			public bool? usesEffectDescription;
+			public LocalizedString? description;
+			public LocalizedString? flavorText;
+			public float? iconScaleModifier;
+			public bool? statsAfterTrigger;
+			public float? cooldown;
+			public ItemTriggerType? triggerType;
+			public List<ItemTrigger>? triggerConditions;
+			public List<ItemEffect>? effects;
+			public PlayerStats? stats;
+			public UnityEvent? effectEvent;
+			public UnityEvent? keyDownEvent;
+			public UnityEvent? keyUpEvent;
+		};
+
+		private static readonly Item DefaultItem = new() {
+			autoUnlocked = false,
+			itemName = "<name>",
+			minorItem = false,
+			rarity = Rarity.Common,
+			itemTags = [],
+			title = new UnlocalizedString("<Title>"),
+			usesTriggerDescription = false,
+			triggerDescription = new UnlocalizedString("<Trigger Description>"),
+			usesEffectDescription = false,
+			description = new UnlocalizedString("<Item Description>"),
+			flavorText = new UnlocalizedString("<Flavor Text>"),
+			iconScaleModifier = 1f,
+			statsAfterTrigger = false,
+			cooldown = 0f,
+			triggerType = ItemTriggerType.None,
+			triggerConditions = [],
+			effects = [],
+			stats = NewPlayerStats(),
+			effectEvent = new(),
+			keyDownEvent = new(),
+			keyUpEvent = new()
+		};
+
 		static ItemFactory() {
 			On.ItemDatabase.Awake += (orig, self) => {
 				orig(self);
@@ -131,58 +179,6 @@ namespace CustomItemLib {
 			}
 		}
 
-		private static void AssignIfNotNull<T>(ref T param, T? val) {
-			if (val is not null) param = val;
-		}
-
-		public class Item {
-			public bool autoUnlocked = false;
-			public string itemName;
-			public bool? minorItem;
-			public Rarity? rarity;
-			public List<ItemTag>? itemTags;
-			public LocalizedString? title;
-			public bool? usesTriggerDescription;
-			public LocalizedString? triggerDescription;
-			public bool? usesEffectDescription;
-			public LocalizedString? description;
-			public LocalizedString? flavorText;
-			public float? iconScaleModifier;
-			public bool? statsAfterTrigger;
-			public float? cooldown;
-			public ItemTriggerType? triggerType;
-			public List<ItemTrigger>? triggerConditions;
-			public List<ItemEffect>? effects;
-			public PlayerStats? stats;
-			public UnityEvent? effectEvent;
-			public UnityEvent? keyDownEvent;
-			public UnityEvent? keyUpEvent;
-		};
-
-		private static readonly Item defaults = new() {
-			autoUnlocked = false,
-			itemName = "<name>",
-			minorItem = false,
-			rarity = Rarity.Common,
-			itemTags = [],
-			title = new UnlocalizedString("<Title>"),
-			usesTriggerDescription = false,
-			triggerDescription = new UnlocalizedString("<Trigger Description>"),
-			usesEffectDescription = false,
-			description = new UnlocalizedString("<Item Description>"),
-			flavorText = new UnlocalizedString("<Flavor Text>"),
-			iconScaleModifier = 1f,
-			statsAfterTrigger = false,
-			cooldown = 0f,
-			triggerType = ItemTriggerType.None,
-			triggerConditions = [],
-			effects = [],
-			stats = NewPlayerStats(),
-			effectEvent = new(),
-			keyDownEvent = new(),
-			keyUpEvent = new()
-		};
-
 		/**
 		 * Tries to get the named member as a field first and then as a property
 		 */
@@ -218,21 +214,19 @@ namespace CustomItemLib {
 
 			if (itemInstance is not null) {
 				Debug.Log($"[CustomItemLib] Replacing item {item.itemName}");
-				var itmInstType = itemInstance.GetType();
 
 				foreach (var field in item.GetType().GetFields()) {
 					var newVal = field.GetValue(item);
 					if (newVal is null) continue;
 
-					var oldVal = TryGet(field.Name, itemInstance);
-					if (oldVal is null) continue;
-
-					Debug.Log(field.Name);
-					Debug.Log(oldVal);
-					Debug.Log(newVal);
-
 					TrySet(field.Name, ref itemInstance, newVal);
+
+					Debug.Log($"[CustomItemLib] Set item stat {field.Name}");
 				}
+			} else {
+				Debug.Log($"[CustomItemLib] Creating new item {item.itemName}");
+
+				itemInstance = CreateNewItemInstance(item.itemName);
 			}
 		}
 
@@ -266,8 +260,7 @@ namespace CustomItemLib {
 
 				if (minorItem is not null) itemInstance.minorItem = (bool)minorItem;
 				if (rarity is not null) itemInstance.rarity = (Rarity)rarity;
-				AssignIfNotNull(ref itemInstance.itemTags, itemTags);
-				// if (itemTags is not null) itemInstance.itemTags = itemTags;
+				if (itemTags is not null) itemInstance.itemTags = itemTags;
 				if (title is not null) itemInstance.title = title;
 				if (usesTriggerDescription is not null) itemInstance.usesTriggerDescription = (bool)usesTriggerDescription;
 				if (triggerDescription is not null) itemInstance.triggerDescription = triggerDescription;
