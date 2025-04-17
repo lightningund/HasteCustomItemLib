@@ -27,7 +27,9 @@ ItemFactory.AddItemToDatabase(
 );
 ```
 
+<br>
 
+#### Custom Items
 The same can be done to create a new item. In a few places in Haste's codebase, enums are used like the `ItemTriggerType` below rather than the ints used in the JSON files. If you are unfamiliar with the enums, I would recommend keeping them open on a decompiler like dnSpy or ILSpy. The example below creates a new item which will trigger continuously every 3 seconds. We will get to effects later, for now this item does nothing when it triggers.
 
 ```csharp
@@ -38,7 +40,9 @@ ItemFactory.AddItemToDatabase(
 );
 ```
 
+<br>
 
+#### Tooltips and Item Descriptions
 Items have four different string fields that are used to create the tooltip that appears when you hover over one. In the first example, because we were modifying an item that already exists, we don't have to include these parameters, and the library will fall back to the original item's values. In the second example, because we created a new item without including them, the library uses a default warning string. These use Unity's LocalizedString class instead of normal strings, however Haste has helpfully provided a UnlocalizedString class which we will use below. 
 
 ```csharp
@@ -54,7 +58,9 @@ ItemFactory.AddItemToDatabase(
 Note 1: To use localization features, see the localization section in https://github.com/Haste-Team/HastePlugins/blob/main/README.md and use LocalizedStrings in place of the unlocalized versions below.
 Note 2: Haste supports Unity Rich Text. You can use this to create coloured (and otherwise modified) strings.
 
+<br>
 
+#### Simple Stat Effects
 So far, the items we've created haven't actually done anything, so let's create a simple item that increases our max energy when we have it. Here we see the other factory method provided by this library, `ItemFactory.NewPlayerStats`. Haste's native `PlayerStats` class is intended to be serialized into, and therefore doesn't assign default values to its fields. This would normally leave us the responsibility of initializing each field with a new PlayerStat object, even if we aren't assigning any meaningful values. `ItemFactory.NewPlayerStats` takes care of this boilerplate by assigning a default PlayerStat object to any fields you don't specify. In the example below, we create a PlayerStats that adds 50 max energy to the player. You can also set a multiplier instead of / in addition to the baseValue. Any fields in a PlayerStat that aren't specified will use a default value. See the PlayerStats class definition or an exported item JSON for a list of modifiable stats.
 
 ```csharp
@@ -67,7 +73,9 @@ ItemFactory.AddItemToDatabase(
 Note 1: Keep in mind that `ItemFactory.NewPlayerStats` returns a `PlayerStats` object, while `ItemFactory.AddItemToDatabase` returns nothing.
 Note 2: There are two different similarly named native classes here. `PlayerStats` is a native class containing multiple `PlayerStat` fields.
 
+<br>
 
+#### Triggered Effects
 While the stats field is great for simple effects, most items in Haste have effects that are triggered by something. Below we will create an object that gives the player 1 energy whenever they pick up a spark using the `triggerType` parameter we saw earlier and a new parameter called `effects`. The effects parameter contains a list of `ItemEffect` instances, or more accurately, a list of instances of classes derived from ItemEffect. The game provides a few of these, which you can find in your decompiler by selecting "Analyze" on the ItemEffect class and checking the "Subtypes" section. Here we will use the `AddVariable_Effect` class to add energy to the player.
 
 ```csharp
@@ -84,7 +92,9 @@ ItemFactory.AddItemToDatabase(
 Note 1: `effects` can contain multiple ItemEffect objects. When an item triggers, it triggers ALL of its ItemEffects.
 Note 2: You can create your own `ItemEffect` classes to do just about anything by deriving the native ItemEffect class. (Guide coming sometime in the future)
 
+<br>
 
+#### Trigger Conditions
 Many items in Haste also have a condition that must be met for their effect to trigger. These are defined with the `triggerConditions`, which contains a list of instances of classes derived from the native class `ItemTrigger`, very similarly to the effects from before. Below we'll add a simple `ChanceCheck_IT` trigger condition that only lets the item trigger 50% of the time.
 
 ```csharp
@@ -105,7 +115,9 @@ ItemFactory.AddItemToDatabase(
 Note 1: `triggerConditions` can contain multiple ItemTrigger objects. Items will only trigger if ALL of their ItemTriggers return true.
 Note 2: You can create your own `ItemTrigger` classes in the same way as before with ItemEffect. (Guide coming sometime in the future)
 
+<br>
 
+#### ItemsLoaded Event / Full Example
 Unfortunately, you can't just put these method calls in your LandfallPlugin's static constructor, because plugins are loaded before the ItemDatabase is initialized. Normally, you would need to use a MonoMod hook or something similar to load the items at the right time (and you still can if you prefer). However, CustomItemLib provides an event that you can subscribe to to load your items when the game would normally load items, to ensure proper loading and provide some extra compatibility between custom item mods. Below is a full example of the recommended structure when using CustomItemLib.
 
 ```csharp
@@ -144,7 +156,9 @@ namespace ExampleItems
 }
 ```
 
+<br>
 
+#### Exhaustive Example
 Putting everything we've learned together, let's recreate the Brittle Breastplate item from Haste. Keep in mind, this is an extreme case for a complicated item, default item modifications and simpler custom items will rarely be as long as this. Because Brittle Breastplate already has localization for it's tooltip strings, we'll try using LocalizedStrings this time instead of UnlocalizedStrings.
 
 ```csharp
@@ -183,7 +197,9 @@ ItemFactory.AddItemToDatabase(
 
 Note: `ItemFactory.AddItemToDatabase` includes a parameter `autoUnlocked` which determines whether to automatically unlock the item for the player. This is set to true by default, but you can set it to false if your mod involves player progression and you want the player to have to unlock the item the normal way.
 
+<br>
 
+#### Parameters and Default Values
 Below is a full list of parameters available with `ItemFactory.AddItemToDatabase` and their default values.
 
 ```csharp
