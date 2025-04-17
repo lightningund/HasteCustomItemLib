@@ -135,6 +135,66 @@ namespace CustomItemLib {
 			if (val is not null) param = val;
 		}
 
+		public class Item : ItemInstance {
+			public bool autoUnlocked = false;
+			public new string itemName;
+			public new bool? minorItem;
+			public new Rarity? rarity;
+			public new List<ItemTag>? itemTags;
+			public new LocalizedString? title;
+			public new bool? usesTriggerDescription;
+			public new LocalizedString? triggerDescription;
+			public new bool? usesEffectDescription;
+			public new LocalizedString? description;
+			public new LocalizedString? flavorText;
+			public new float? iconScaleModifier;
+			public new bool? statsAfterTrigger;
+			public new float? cooldown;
+			public new ItemTriggerType? triggerType;
+			public new List<ItemTrigger>? triggerConditions;
+			public new List<ItemEffect>? effects;
+			public new PlayerStats? stats;
+			public new UnityEvent? effectEvent;
+			public new UnityEvent? keyDownEvent;
+			public new UnityEvent? keyUpEvent;
+		};
+
+		private static readonly Item defaults = new() {
+			autoUnlocked = false,
+			itemName = "<name>",
+			minorItem = false,
+			rarity = Rarity.Common,
+			itemTags = [],
+			title = new UnlocalizedString("<Title>"),
+			usesTriggerDescription = false,
+			triggerDescription = new UnlocalizedString("<Trigger Description>"),
+			usesEffectDescription = false,
+			description = new UnlocalizedString("<Item Description>"),
+			flavorText = new UnlocalizedString("<Flavor Text>"),
+			iconScaleModifier = 1f,
+			statsAfterTrigger = false,
+			cooldown = 0f,
+			triggerType = ItemTriggerType.None,
+			triggerConditions = [],
+			effects = [],
+			stats = NewPlayerStats(),
+			effectEvent = new(),
+			keyDownEvent = new(),
+			keyUpEvent = new()
+		};
+
+		public static void AddItemToDatabase(Item item) {
+			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
+
+			if (itemInstance is not null) {
+				Debug.Log($"[CustomItemLib] Replacing item {item.itemName}");
+
+				foreach (var prop in itemInstance.GetType().GetProperties()) {
+					AssignIfNotNull(ref prop.GetValue(itemInstance), prop.GetValue(item));
+				}
+			}
+		}
+
 		public static void AddItemToDatabase(
 			string itemName,
 			bool autoUnlocked = true,
@@ -166,7 +226,7 @@ namespace CustomItemLib {
 				if (minorItem is not null) itemInstance.minorItem = (bool)minorItem;
 				if (rarity is not null) itemInstance.rarity = (Rarity)rarity;
 				AssignIfNotNull(ref itemInstance.itemTags, itemTags);
-				if (itemTags is not null) itemInstance.itemTags = itemTags;
+				// if (itemTags is not null) itemInstance.itemTags = itemTags;
 				if (title is not null) itemInstance.title = title;
 				if (usesTriggerDescription is not null) itemInstance.usesTriggerDescription = (bool)usesTriggerDescription;
 				if (triggerDescription is not null) itemInstance.triggerDescription = triggerDescription;
@@ -189,19 +249,19 @@ namespace CustomItemLib {
 				itemInstance = CreateNewItemInstance(itemName);
 				itemInstance.minorItem = minorItem ?? false;
 				itemInstance.rarity = rarity ?? Rarity.Common;
-				itemInstance.itemTags = itemTags ?? new List<ItemTag>();
-				itemInstance.title = title ?? new UnlocalizedString("Missing Title");
+				itemInstance.itemTags = itemTags ?? [];
+				itemInstance.title = title ?? new UnlocalizedString("<Title>");
 				itemInstance.usesTriggerDescription = usesTriggerDescription ?? false;
-				itemInstance.triggerDescription = triggerDescription ?? new UnlocalizedString("Item is missing trigger description");
+				itemInstance.triggerDescription = triggerDescription ?? new UnlocalizedString("<Trigger Description>");
 				itemInstance.usesEffectDescription = usesEffectDescription ?? false;
-				itemInstance.description = description ?? new UnlocalizedString("Item is missing description");
-				itemInstance.flavorText = flavorText ?? new UnlocalizedString("Dalil didn't explain what this item is...");
+				itemInstance.description = description ?? new UnlocalizedString("<Item Description>");
+				itemInstance.flavorText = flavorText ?? new UnlocalizedString("<Flavor Text>");
 				itemInstance.iconScaleModifier = iconScaleModifier ?? 1f;
 				itemInstance.statsAfterTrigger = statsAfterTrigger ?? false;
 				itemInstance.cooldown = cooldown ?? 0f;
 				itemInstance.triggerType = triggerType ?? ItemTriggerType.None;
-				itemInstance.triggerConditions = triggerConditions ?? new List<ItemTrigger> { };
-				itemInstance.effects = effects ?? new List<ItemEffect> { };
+				itemInstance.triggerConditions = triggerConditions ?? [];
+				itemInstance.effects = effects ?? [];
 				itemInstance.stats = stats ?? NewPlayerStats();
 				itemInstance.effectEvent = effectEvent ?? new UnityEvent();
 				itemInstance.keyDownEvent = keyDownEvent ?? new UnityEvent();
