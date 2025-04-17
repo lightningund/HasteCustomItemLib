@@ -28,7 +28,6 @@ using Landfall.Haste;
 namespace CustomItemLib {
 	public class ItemFactory {
 		public class Item {
-			public bool autoUnlocked = false;
 			public string itemName;
 			public bool? minorItem;
 			public Rarity? rarity;
@@ -52,7 +51,6 @@ namespace CustomItemLib {
 		};
 
 		private static readonly Item DefaultItem = new() {
-			autoUnlocked = false,
 			itemName = "<name>",
 			minorItem = false,
 			rarity = Rarity.Common,
@@ -221,7 +219,7 @@ namespace CustomItemLib {
 			}
 		}
 
-		public static void AddItemToDatabase(Item item) {
+		public static void AddItemToDatabase(Item item, bool autoUnlocked = false) {
 			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
 
 			if (itemInstance is not null) {
@@ -233,6 +231,12 @@ namespace CustomItemLib {
 			}
 
 			SetAll(ref itemInstance, item);
+
+			if (autoUnlocked) {
+				Debug.Log($"[CustomItemLib] Unlocking item {item.itemName}");
+				FactSystem.SetFact(new Fact($"{item.itemName}_ShowItem"), 1.0f);
+				FactSystem.SetFact(new Fact($"item_unlocked_{item.itemName}"), 1.0f);
+			}
 		}
 
 		public static void AddItemToDatabase(
