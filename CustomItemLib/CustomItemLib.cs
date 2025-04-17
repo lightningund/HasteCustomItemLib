@@ -209,20 +209,24 @@ namespace CustomItemLib {
 			} catch (Exception) { }
 		}
 
+		private static void SetAll(ref ItemInstance instance, Item item) {
+			foreach (var field in item.GetType().GetFields()) {
+				var newVal = field.GetValue(item);
+				if (newVal is null) continue;
+
+				TrySet(field.Name, ref instance, newVal);
+
+				Debug.Log($"[CustomItemLib] Set item stat {field.Name}");
+			}
+		}
+
 		public static void AddItemToDatabase(Item item) {
 			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
 
 			if (itemInstance is not null) {
 				Debug.Log($"[CustomItemLib] Replacing item {item.itemName}");
 
-				foreach (var field in item.GetType().GetFields()) {
-					var newVal = field.GetValue(item);
-					if (newVal is null) continue;
-
-					TrySet(field.Name, ref itemInstance, newVal);
-
-					Debug.Log($"[CustomItemLib] Set item stat {field.Name}");
-				}
+				SetAll(ref itemInstance, item);
 			} else {
 				Debug.Log($"[CustomItemLib] Creating new item {item.itemName}");
 
