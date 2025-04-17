@@ -27,6 +27,8 @@ using Landfall.Haste;
 
 namespace CustomItemLib {
 	public class ItemFactory {
+		// The names of the fields in here cannot be changed
+		// They match to the members of ItemInstance
 		public class Item {
 			public string itemName;
 			public bool? minorItem;
@@ -67,7 +69,7 @@ namespace CustomItemLib {
 			triggerType = ItemTriggerType.None,
 			triggerConditions = [],
 			effects = [],
-			stats = NewPlayerStats(),
+			stats = NewPlayerStats(new PlayerStats { }),
 			effectEvent = new(),
 			keyDownEvent = new(),
 			keyUpEvent = new()
@@ -134,6 +136,23 @@ namespace CustomItemLib {
 			}
 		}
 
+		public static PlayerStats NewPlayerStats(PlayerStats? stats) {
+			var defaulted = new PlayerStats();
+
+			if (stats is null) return defaulted;
+
+			foreach (var field in stats.GetType().GetFields()) {
+				var newVal = field.GetValue(stats) ?? new PlayerStat();
+
+				TrySet(field.Name, ref defaulted, newVal);
+
+				Debug.Log($"[CustomItemLib] Set player stat {field.Name}");
+			}
+
+			return defaulted;
+		}
+
+		[Obsolete("Please use the new `PlayerStats` overload instead")]
 		public static PlayerStats NewPlayerStats(
 			PlayerStat? maxHealth = null,
 			PlayerStat? runSpeed = null,
@@ -160,29 +179,29 @@ namespace CustomItemLib {
 			PlayerStat? extraLevelDifficulty = null
 		) {
 			var playerStats = new PlayerStats {
-				maxHealth = maxHealth ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				runSpeed = runSpeed ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				airSpeed = airSpeed ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				turnSpeed = turnSpeed ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				drag = drag ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				gravity = gravity ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				fastFallSpeed = fastFallSpeed ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				fastFallLerp = fastFallLerp ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				lives = lives ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				dashes = dashes ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				boost = boost ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				luck = luck ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				startWithEnergyPercentage = startWithEnergyPercentage ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				maxEnergy = maxEnergy ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				itemPriceMultiplier = itemPriceMultiplier ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				itemRarity = itemRarity ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				sparkMultiplier = sparkMultiplier ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				startingResource = startingResource ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				energyGain = energyGain ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				damageMultiplier = damageMultiplier ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				sparkPickupRange = sparkPickupRange ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				extraLevelSparks = extraLevelSparks ?? new PlayerStat { baseValue = 0f, multiplier = 1f },
-				extraLevelDifficulty = extraLevelDifficulty ?? new PlayerStat { baseValue = 0f, multiplier = 1f }
+				maxHealth = maxHealth ?? new(),
+				runSpeed = runSpeed ?? new(),
+				airSpeed = airSpeed ?? new(),
+				turnSpeed = turnSpeed ?? new(),
+				drag = drag ?? new(),
+				gravity = gravity ?? new(),
+				fastFallSpeed = fastFallSpeed ?? new(),
+				fastFallLerp = fastFallLerp ?? new(),
+				lives = lives ?? new(),
+				dashes = dashes ?? new(),
+				boost = boost ?? new(),
+				luck = luck ?? new(),
+				startWithEnergyPercentage = startWithEnergyPercentage ?? new(),
+				maxEnergy = maxEnergy ?? new(),
+				itemPriceMultiplier = itemPriceMultiplier ?? new(),
+				itemRarity = itemRarity ?? new(),
+				sparkMultiplier = sparkMultiplier ?? new(),
+				startingResource = startingResource ?? new(),
+				energyGain = energyGain ?? new(),
+				damageMultiplier = damageMultiplier ?? new(),
+				sparkPickupRange = sparkPickupRange ?? new(),
+				extraLevelSparks = extraLevelSparks ?? new(),
+				extraLevelDifficulty = extraLevelDifficulty ?? new()
 			};
 
 			return playerStats;
@@ -219,6 +238,12 @@ namespace CustomItemLib {
 			}
 		}
 
+		private static void UnlockItem(string name) {
+			Debug.Log($"[CustomItemLib] Unlocking item {name}");
+			FactSystem.SetFact(new Fact($"{name}_ShowItem"), 1.0f);
+			FactSystem.SetFact(new Fact($"item_unlocked_{name}"), 1.0f);
+		}
+
 		public static void AddItemToDatabase(Item item, bool autoUnlocked = false) {
 			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
 
@@ -233,12 +258,11 @@ namespace CustomItemLib {
 			SetAll(ref itemInstance, item);
 
 			if (autoUnlocked) {
-				Debug.Log($"[CustomItemLib] Unlocking item {item.itemName}");
-				FactSystem.SetFact(new Fact($"{item.itemName}_ShowItem"), 1.0f);
-				FactSystem.SetFact(new Fact($"item_unlocked_{item.itemName}"), 1.0f);
+				UnlockItem(item.itemName);
 			}
 		}
 
+		[Obsolete("Please use the new `Item` overload instead")]
 		public static void AddItemToDatabase(
 			string itemName,
 			bool autoUnlocked = true,
