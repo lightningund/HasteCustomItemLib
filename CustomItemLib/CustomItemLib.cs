@@ -143,6 +143,10 @@ namespace CustomItemLib
             }
         }
 
+		private static void AssignIfNotNull<T>(ref T param, T? val) {
+			if (val is not null) param = val;
+		}
+
         public static void AddItemToDatabase(
             string itemName,
             bool autoUnlocked = true,
@@ -173,6 +177,7 @@ namespace CustomItemLib
                 Debug.Log($"[CustomItemLib] Replacing item {itemName}");
                 if (minorItem is not null) itemInstance.minorItem = (bool)minorItem;
                 if (rarity is not null) itemInstance.rarity = (Rarity)rarity;
+				AssignIfNotNull(ref itemInstance.itemTags, itemTags);
                 if (itemTags is not null) itemInstance.itemTags = itemTags;
                 if (title is not null) itemInstance.title = title;
                 if (usesTriggerDescription is not null) itemInstance.usesTriggerDescription = (bool)usesTriggerDescription;
