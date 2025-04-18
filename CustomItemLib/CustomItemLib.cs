@@ -245,6 +245,11 @@ namespace CustomItemLib {
 		}
 
 		public static void AddItemToDatabase(Item item, bool autoUnlocked = false) {
+			// Special processing for PlayerStats since it can't have any null fields
+			if (item.stats is not null) {
+				item.stats = NewPlayerStats(item.stats);
+			}
+
 			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
 
 			if (itemInstance is not null) {
