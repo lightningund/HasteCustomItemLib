@@ -1,6 +1,6 @@
 ﻿// MIT License
 
-// Copyright (c) 2025 Stevelion
+// Copyright (c) 2025 lightningund
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -119,22 +119,14 @@ namespace CustomItemLib {
 		static ItemFactory() {
 			On.ItemDatabase.Awake += (orig, self) => {
 				orig(self);
-				LoadCustomItems();
+				Debug.Log($"[CustomItemLib] Loading custom items");
+				if (ItemsLoaded is not null) {
+					ItemsLoaded();
+				}
 			};
 		}
 
 		public static event Action ItemsLoaded = null!;
-
-		private static void LoadCustomItems() {
-			Debug.Log($"[CustomItemLib] Loading custom items");
-			if (ItemsLoaded is not null) {
-				try {
-					ItemsLoaded();
-				} catch (Exception e) {
-					Debug.LogException(e);
-				}
-			}
-		}
 
 		public static PlayerStats NewPlayerStats(PlayerStats? stats) {
 			var defaulted = new PlayerStats();
@@ -208,14 +200,10 @@ namespace CustomItemLib {
 		}
 
 		private static ItemInstance? GetItemInstanceByItemName(string itemName) { // Can return null if item does not exist
-			foreach (ItemInstance itemObject in ItemDatabase.instance.items) {
-				ItemInstance itemInstanceComponent;
-
-				if (
-					string.Equals(itemName, itemObject.name, StringComparison.InvariantCultureIgnoreCase)
-					&& itemObject.TryGetComponent(out itemInstanceComponent)
-				) {
-					return itemInstanceComponent;
+			var matches = ItemDatabase.instance.items.FindAll(itm => itemName.Equals(itm.name, StringComparison.InvariantCultureIgnoreCase));
+			foreach (ItemInstance itmObj in matches) {
+				if (itmObj.TryGetComponent(out ItemInstance itmComponent)) {
+					return itmComponent;
 				}
 			}
 
