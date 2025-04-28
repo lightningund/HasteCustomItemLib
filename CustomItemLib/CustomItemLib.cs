@@ -244,6 +244,23 @@ namespace CustomItemLib {
 			FactSystem.SetFact(new Fact($"item_unlocked_{name}"), 1.0f);
 		}
 
+		public static void EditItemInDatabase(Item item) {
+			// Special processing for PlayerStats since it can't have any null fields
+			if (item.stats is not null) {
+				item.stats = NewPlayerStats(item.stats);
+			}
+
+			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
+
+			if (itemInstance is null) {
+				Debug.LogError($"[CustomItemLib] Item {item.itemName} not found");
+				return;
+			}
+
+			Debug.Log($"[CustomItemLib] Editing item {item.itemName}");
+			SetAll(ref itemInstance, item);
+		}
+
 		public static void AddItemToDatabase(Item item, bool autoUnlocked = false) {
 			// Special processing for PlayerStats since it can't have any null fields
 			if (item.stats is not null) {
@@ -253,13 +270,12 @@ namespace CustomItemLib {
 			ItemInstance? itemInstance = GetItemInstanceByItemName(item.itemName);
 
 			if (itemInstance is not null) {
-				Debug.Log($"[CustomItemLib] Replacing item {item.itemName}");
-			} else {
-				Debug.Log($"[CustomItemLib] Creating new item {item.itemName}");
-
-				itemInstance = CreateNewItemInstance(item.itemName);
+				Debug.LogError($"[CustomItemLib] Item {item.itemName} already exists");
+				return;
 			}
 
+			Debug.Log($"[CustomItemLib] Creating item {item.itemName}");
+			itemInstance = CreateNewItemInstance(item.itemName);
 			SetAll(ref itemInstance, item);
 
 			if (autoUnlocked) {

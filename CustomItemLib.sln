@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomItemLib", "CustomItemLib\CustomItemLib.csproj", "{65C99177-914C-451E-9318-BAABE8857BD8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomItemLib", "CustomItemLib\CustomItemLib.csproj", "{65C99177-914C-451E-9318-BAABE8857BD8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Example", "..\Template\Example.csproj", "{AA59078A-ADBA-4185-A164-BA84AF804CA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{65C99177-914C-451E-9318-BAABE8857BD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65C99177-914C-451E-9318-BAABE8857BD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65C99177-914C-451E-9318-BAABE8857BD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA59078A-ADBA-4185-A164-BA84AF804CA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA59078A-ADBA-4185-A164-BA84AF804CA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA59078A-ADBA-4185-A164-BA84AF804CA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA59078A-ADBA-4185-A164-BA84AF804CA1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
